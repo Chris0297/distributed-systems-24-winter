@@ -8,11 +8,14 @@ import (
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		Immutable: true,
+	})
 	app.Get("/api/shopping/:name", handler.GetShoppingItemByName)
 	fmt.Println("hello")
 	app.Post("/api/shopping/:name", handler.AddNewShoppingItem)
 	app.Put("/api/shopping/:name", handler.UpdateAmount)
+	app.Delete("api/shopping/:name", handler.DeleteShoppingItem)
 	if err := app.Listen(":3000"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
