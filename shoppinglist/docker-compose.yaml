@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - PORT=${PORT:-8080}  # Standardport 8080, falls keine PORT-Variable gesetzt ist
+      - PORT=8080
     ports:
       - "8080:8080"  # Exponiert den Container auf Port 8080 des Hosts
     container_name: go_app
