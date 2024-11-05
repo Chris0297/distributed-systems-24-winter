@@ -5,11 +5,16 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var ShoppingList []Items
+var ShoppingList []ShoppingItem
 
-type Items struct {
-	Name string
-	Amount int
+type ShoppingItem struct {
+	Name string `json:"name"`
+	Amount int  `json:"amount"`
+}
+
+type ShoppingListResponse struct {
+    Message string         `json:"message"`
+    Data    []ShoppingItem `json:"data"`
 }
 
 func GetShoppingItemByName(c *fiber.Ctx) error {
@@ -21,9 +26,17 @@ func GetShoppingItemByName(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNotFound).JSON("Item not found")
 }
 
+func GetAllItems(c *fiber.Ctx) error {
+	response := ShoppingListResponse{
+		Message: "Successfully retrieved the list of items.",
+		Data: ShoppingList,
+	}
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
 func AddNewShoppingItem(c *fiber.Ctx) error {
 	name := c.Params("name")
-	neues_item := Items{Name: name, Amount: 1}
+	neues_item := ShoppingItem{Name: name, Amount: 1}
 	ShoppingList = append(ShoppingList,neues_item)
 	OutputShoppinglist()
 	return c.Status(fiber.StatusCreated).JSON("Item successfully created.")

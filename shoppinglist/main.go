@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"shoppinglist/handler"
 	"log"
 	"github.com/gofiber/fiber/v2"
@@ -12,7 +11,7 @@ func main() {
 		Immutable: true,
 	})
 	app.Get("/api/shopping/:name", handler.GetShoppingItemByName)
-	fmt.Println("hello")
+	app.Get("/api/shopping", handler.GetAllItems)
 	app.Post("/api/shopping/:name", handler.AddNewShoppingItem)
 	app.Put("/api/shopping/:name", handler.UpdateAmount)
 	app.Delete("api/shopping/:name", handler.DeleteShoppingItem)
