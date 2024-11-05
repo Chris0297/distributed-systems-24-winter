@@ -12,26 +12,19 @@ type ShoppingItem struct {
 	Amount int  `json:"amount"`
 }
 
-type ShoppingListResponse struct {
-    Message string         `json:"message"`
-    Data    []ShoppingItem `json:"data"`
-}
+
 
 func GetShoppingItemByName(c *fiber.Ctx) error {
 	name := c.Params("name")
-	IsValidItem := SearchItem(name)
+	IsValidItem, found_item := SearchItem(name)
 	if IsValidItem {
-		return c.Status(fiber.StatusOK).JSON("Item found and retrieved successfully." + name)
+		return c.Status(fiber.StatusOK).JSON(found_item)
 	}
-	return c.Status(fiber.StatusNotFound).JSON("Item not found")
+	return c.Status(fiber.StatusNotFound).Send([]byte{})
 }
 
 func GetAllItems(c *fiber.Ctx) error {
-	response := ShoppingListResponse{
-		Message: "Successfully retrieved the list of items.",
-		Data: ShoppingList,
-	}
-	return c.Status(fiber.StatusOK).JSON(response)
+	return c.Status(fiber.StatusOK).JSON(ShoppingList)
 }
 
 func AddNewShoppingItem(c *fiber.Ctx) error {
@@ -39,32 +32,37 @@ func AddNewShoppingItem(c *fiber.Ctx) error {
 	neues_item := ShoppingItem{Name: name, Amount: 1}
 	ShoppingList = append(ShoppingList,neues_item)
 	OutputShoppinglist()
-	return c.Status(fiber.StatusCreated).JSON("Item successfully created.")
+	return c.Status(fiber.StatusCreated).JSON(neues_item)
 }
 
-func UpdateAmount(c *fiber.Ctx) error {
+func UpdateItem(c *fiber.Ctx) error {
 	name := c.Params("name")
-	ItemCounter(name)
-	OutputShoppinglist()
-	return c.Status(fiber.StatusOK).JSON("Item updated successfully.")
+	is_valid_item, item_found := SearchItem(name)
+	if is_valid_item {
+		ItemCounter(item_found.Name)
+		OutputShoppinglist()
+		return c.Status(fiber.StatusOK).JSON(item_found)
+	}
+	
+	return c.Status(fiber.StatusNotFound).Send([]byte{})
 }
 
 func DeleteShoppingItem(c *fiber.Ctx) error {
     name := c.Params("name")
     IsDeleted := DeleteItem(name)
     if IsDeleted{
-        return c.Status(fiber.StatusOK).JSON("Item deleted successfully.")
+        return c.Status(fiber.StatusOK).Send([]byte{})
     }
-        return c.Status(fiber.StatusNoContent).JSON("Item not found.")
+        return c.Status(fiber.StatusNoContent).Send([]byte{})
 }
 
-func SearchItem(name string) bool {
+func SearchItem(name string) (bool, *ShoppingItem) {
 	for _, item := range ShoppingList {
 		if item.Name == name {
-			return true
+			return true, &item
 		}
 	}
-	return false
+	return false,nil 
 }
 
 func DeleteItem(name string) bool  {
@@ -87,6 +85,5 @@ func ItemCounter(name string) {
 }
 
 func OutputShoppinglist(){
-	fmt.Printf("%v\n", ShoppingList)
 	fmt.Println(ShoppingList)
 }
