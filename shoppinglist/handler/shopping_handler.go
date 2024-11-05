@@ -39,11 +39,11 @@ func UpdateItem(c *fiber.Ctx) error {
 	name := c.Params("name")
 	is_valid_item, item_found := SearchItem(name)
 	if is_valid_item {
-		ItemCounter(item_found.Name)
+		ItemCounter(item_found)
 		OutputShoppinglist()
 		return c.Status(fiber.StatusOK).JSON(item_found)
 	}
-	
+
 	return c.Status(fiber.StatusNotFound).Send([]byte{})
 }
 
@@ -57,12 +57,12 @@ func DeleteShoppingItem(c *fiber.Ctx) error {
 }
 
 func SearchItem(name string) (bool, *ShoppingItem) {
-	for _, item := range ShoppingList {
-		if item.Name == name {
-			return true, &item
+	for i := range ShoppingList { 
+		if ShoppingList[i].Name == name {
+			return true, &ShoppingList[i] 
 		}
 	}
-	return false,nil 
+	return false, nil
 }
 
 func DeleteItem(name string) bool  {
@@ -76,12 +76,8 @@ func DeleteItem(name string) bool  {
 }
 
 
-func ItemCounter(name string) {
-	for i := range ShoppingList {
-		if ShoppingList[i].Name == name {
-			ShoppingList[i].Amount++
-		}
-	}
+func ItemCounter(item *ShoppingItem)  {
+	item.Amount++
 }
 
 func OutputShoppinglist(){

@@ -2,14 +2,14 @@ package main
 
 import (
 	"log"
-	//"os"
+	 //"os"
 	"shoppinglist/handler"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
-	// Setting port via enviorment variable at the docker run command -e PORT=XXXX
+	//Setting port via enviorment variable at the docker run command -e PORT=XXXX
 	// port := os.Getenv("PORT")
 	// if port == "" {
 	// 	log.Fatal("PORT enviorment variable is not set")
