@@ -1,0 +1,35 @@
+basePath: /
+definitions:
+  handler.ShoppingItem:
+    properties:
+      amount:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API for managing a shopping list.
+  title: Shopping List API
+  version: "1.0"
+paths:
+  /item/{name}:
+    get:
+      description: Get details of a specific shopping item
+      operationId: get-item-by-name
+      parameters:
+      - description: Name of the shopping item
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ShoppingItem'
+      summary: Get a shopping item by name
+swagger: "2.0"

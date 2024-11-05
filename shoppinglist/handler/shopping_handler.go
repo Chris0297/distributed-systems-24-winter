@@ -47,6 +47,14 @@ func UpdateItem(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNotFound).Send([]byte{})
 }
 
+
+// @Summary Get a shopping item by name
+// @Description Get details of a specific shopping item
+// @ID get-item-by-name
+// @Produce json
+// @Param name path string true "Name of the shopping item"
+// @Success 200 {object} ShoppingItem
+// @Router /item/{name} [get]
 func DeleteShoppingItem(c *fiber.Ctx) error {
     name := c.Params("name")
     IsDeleted := DeleteItem(name)

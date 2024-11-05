@@ -6,8 +6,14 @@ import (
 	"shoppinglist/handler"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/swaggo/fiber-swagger" // http://localhost:3000/swagger/index.html
+    _ "shoppinglist/docs" // Hier sicherstellen, dass der Pfad korrekt ist
 )
-
+// @title Shopping List API
+// @version 1.0
+// @description This is the API for managing a shopping list.
+// @host localhost:8080
+// @BasePath /
 func main() {
 	//Setting port via enviorment variable at the docker run command -e PORT=XXXX
 	port := os.Getenv("PORT")
@@ -27,6 +33,7 @@ func main() {
         AllowHeaders: "Content-Type, Authorization",
     }))
 
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 	app.Get(apiShoppingWithName, handler.GetShoppingItemByName)
 	app.Get("/api/shopping", handler.GetAllItems)
 	app.Post(apiShoppingWithName, handler.AddNewShoppingItem)

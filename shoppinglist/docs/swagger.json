@@ -1,0 +1,53 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the API for managing a shopping list.",
+        "title": "Shopping List API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/item/{name}": {
+            "get": {
+                "description": "Get details of a specific shopping item",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a shopping item by name",
+                "operationId": "get-item-by-name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the shopping item",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ShoppingItem"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handler.ShoppingItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
