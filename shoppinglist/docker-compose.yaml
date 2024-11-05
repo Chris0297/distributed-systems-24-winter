@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PORT=${PORT:-8080}  # Standardport 8080, falls keine PORT-Variable gesetzt ist
+    ports:
+      - "8080:8080"  # Exponiert den Container auf Port 8080 des Hosts
+    container_name: go_app
+    networks:
+      - app-network
+    depends_on:
+      - db  # Falls eine Datenbank benötigt wird, sonst entfernen
+
+  db:
+    image: postgres:13  # Beispiel-Image für PostgreSQL
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: user  # Benutzername für die Datenbank
+      POSTGRES_PASSWORD: password  # Passwort für den Benutzer
+      POSTGRES_DB: appdb  # Name der Datenbank
+    ports:
+      - "5432:5432"  # Exponiert den Datenbank-Container auf Port 5432 des Hosts
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge  # Standard-Bridge-Netzwerk für die Kommunikation der Container
