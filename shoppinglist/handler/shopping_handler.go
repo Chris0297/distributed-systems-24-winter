@@ -36,22 +36,51 @@ func GetAllItems(c *fiber.Ctx) error {
 
 func AddNewShoppingItem(c *fiber.Ctx) error {
 	var newItem ShoppingItem
+
+	// Body des Requests parsen
 	if err := c.BodyParser(&newItem); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Ungültiger Request-Body")
 	}
-	
+
+	// Überprüfen, ob der Artikelname gesetzt ist
 	if newItem.Name == "" {
 		return c.Status(fiber.StatusBadRequest).SendString("Artikelname ist erforderlich")
 	}
-	query := `INSERT INTO shopping_items (shopping_item, shopping_amount) VALUES ($1, $2) RETURNING shopping_item, shopping_amount`
-	
-	err := dbContext.QueryRow(query, newItem.Name, newItem.Amount).Scan(&newItem.Name, &newItem.Amount)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Einfügen des Artikels: %v", err))
+
+	// Zuerst prüfen, ob der Artikel bereits in der Datenbank existiert
+	var existingAmount int
+	err := dbContext.QueryRow("SELECT shopping_amount FROM shopping_items WHERE shopping_item = $1", newItem.Name).Scan(&existingAmount)
+
+	// Wenn der Artikel bereits existiert, erhöhen wir den Amount
+	if err == nil { // Artikel existiert
+		// Artikel existiert, Amount erhöhen
+		newItem.Amount = existingAmount + newItem.Amount // Hinzufügen der neuen Menge zum bestehenden Betrag
+
+		// Artikel aktualisieren
+		_, err := dbContext.Exec("UPDATE shopping_items SET shopping_amount = $1 WHERE shopping_item = $2", newItem.Amount, newItem.Name)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Aktualisieren des Artikels: %v", err))
+		}
+
+		// Erfolgreiche Antwort mit dem aktualisierten Artikel als JSON
+		return c.Status(fiber.StatusOK).JSON(newItem)
 	}
 
-	// Erfolgreiche Antwort mit dem eingefügten Artikel als JSON
-	return c.Status(fiber.StatusCreated).JSON(newItem)
+	// Wenn der Artikel nicht existiert, fügen wir ihn hinzu
+	if err == sql.ErrNoRows {
+		// Artikel hinzufügen
+		query := `INSERT INTO shopping_items (shopping_item, shopping_amount) VALUES ($1, $2) RETURNING shopping_item, shopping_amount`
+		err := dbContext.QueryRow(query, newItem.Name, newItem.Amount).Scan(&newItem.Name, &newItem.Amount)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Einfügen des Artikels: %v", err))
+		}
+
+		// Erfolgreiche Antwort mit dem eingefügten Artikel als JSON
+		return c.Status(fiber.StatusCreated).JSON(newItem)
+	}
+
+	// Falls ein anderer Fehler auftritt
+	return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Überprüfen des Artikels: %v", err))
 }
 
 func UpdateItem(c *fiber.Ctx) error {
