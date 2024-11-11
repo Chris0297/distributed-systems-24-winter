@@ -24,15 +24,16 @@ func InitDbContext(db *sql.DB){
 
 // Suchfunktion, um ein Item mit dem angegebenen Namen zu finden
 func SearchItem(name string) (bool, map[string]interface{}) {
-	// SQL-Abfrage, um zu prüfen, ob das Item existiert
-	query := "SELECT shopping_item, shopping_amount FROM shopping_items WHERE shopping_item = $1"
+	// SQL-Abfrage, um die ID, den Namen und die Anzahl des Items zu prüfen
+	query := "SELECT id, shopping_item, shopping_amount FROM shopping_items WHERE shopping_item = $1"
 	
 	// Vorbereitung der Rückgabevariablen
+	var id int
 	var shoppingItem string
 	var shoppingAmount int
 	
 	// Abfrage ausführen
-	err := dbContext.QueryRow(query, name).Scan(&shoppingItem, &shoppingAmount)
+	err := dbContext.QueryRow(query, name).Scan(&id, &shoppingItem, &shoppingAmount)
 	
 	// Falls kein Eintrag gefunden wurde, wird `sql.ErrNoRows` zurückgegeben
 	if err == sql.ErrNoRows {
@@ -44,11 +45,13 @@ func SearchItem(name string) (bool, map[string]interface{}) {
 	
 	// Wenn das Item gefunden wurde, die Details in einer Map speichern
 	foundItem := map[string]interface{}{
-		"shopping_item":  shoppingItem,
+		"id":              id,
+		"shopping_item":   shoppingItem,
 		"shopping_amount": shoppingAmount,
 	}
 	return true, foundItem
 }
+
 
 // Handler-Funktion, um das Item nach Namen abzurufen
 func GetShoppingItemByName(c *fiber.Ctx) error {
@@ -60,14 +63,47 @@ func GetShoppingItemByName(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNotFound).Send([]byte("Item nicht gefunden"))
 }
 
-
-
-
-
-
 func GetAllItems(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusOK).JSON(ShoppingList)
+	// SQL-Abfrage, um alle Items abzurufen
+	query := "SELECT id, shopping_item, shopping_amount FROM shopping_items"
+	rows, err := dbContext.Query(query)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Fehler beim Abrufen der Items")
+	}
+	defer rows.Close()
+
+	// Slice, um die Items zu speichern
+	var shoppingList []map[string]interface{}
+
+	// Iteration über die Ergebnisse der Abfrage
+	for rows.Next() {
+		var id int
+		var shoppingItem string
+		var shoppingAmount int
+
+		// Daten aus der aktuellen Zeile abrufen
+		if err := rows.Scan(&id, &shoppingItem, &shoppingAmount); err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString("Fehler beim Verarbeiten der Daten")
+		}
+
+		// Item als Map speichern und zur Liste hinzufügen
+		item := map[string]interface{}{
+			"id":              id,
+			"shopping_item":   shoppingItem,
+			"shopping_amount": shoppingAmount,
+		}
+		shoppingList = append(shoppingList, item)
+	}
+
+	// Fehler bei der Zeilenverarbeitung prüfen
+	if err = rows.Err(); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Fehler beim Verarbeiten der Daten")
+	}
+
+	// Liste aller Items als JSON zurückgeben
+	return c.Status(fiber.StatusOK).JSON(shoppingList)
 }
+
 
 func AddNewShoppingItem(c *fiber.Ctx) error {
 	var newItem ShoppingItem
@@ -118,18 +154,37 @@ func AddNewShoppingItem(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Überprüfen des Artikels: %v", err))
 }
 
-// func UpdateItem(c *fiber.Ctx) error {
-// 	name := c.Params("name")
-// 	is_valid_item, item_found := SearchItem(name)
-// 	if is_valid_item {
-// 		ItemCounter(item_found)
-// 		OutputShoppinglist()
-// 		return c.Status(fiber.StatusOK).JSON(item_found)
-// 	}
+// Handler-Funktion zur Aktualisierung eines Items nach Name
+func UpdateItem(c *fiber.Ctx) error {
+	name := c.Params("name")
+	var newItem ShoppingItem
 
-// 	return c.Status(fiber.StatusNotFound).Send([]byte{})
-// }
+	// Body des Requests parsen
+	if err := c.BodyParser(&newItem); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Ungültiger Request-Body")
+	}
 
+	// Überprüfen, ob das Item existiert
+	isValidItem, itemFound := SearchItem(name)
+	if isValidItem {
+		// Auf die ID des Items zugreifen
+		id := itemFound["id"].(int)
+
+		// Hier kannst du die Logik einfügen, um das Item in der Datenbank mit der neuen Menge zu aktualisieren
+		// Zum Beispiel könnte die shopping_amount aktualisiert werden:
+		query := "UPDATE shopping_items SET shopping_amount = $1 WHERE id = $2"
+		_, err := dbContext.Exec(query, newItem.Amount, id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString("Fehler beim Aktualisieren des Items")
+		}
+
+		// Aktualisierte Informationen zurückgeben
+		itemFound["shopping_amount"] = newItem.Amount
+		return c.Status(fiber.StatusOK).JSON(itemFound)
+	}
+
+	return c.Status(fiber.StatusNotFound).Send([]byte("Item nicht gefunden"))
+}
 
 // @Summary Get a shopping item by name
 // @Description Get details of a specific shopping item
@@ -139,29 +194,24 @@ func AddNewShoppingItem(c *fiber.Ctx) error {
 // @Success 200 {object} ShoppingItem
 // @Router /item/{name} [get]
 func DeleteShoppingItem(c *fiber.Ctx) error {
-    name := c.Params("name")
-    IsDeleted := DeleteItem(name)
-    if IsDeleted{
-        return c.Status(fiber.StatusOK).Send([]byte{})
-    }
-        return c.Status(fiber.StatusNoContent).Send([]byte{})
-}
+	name := c.Params("name")
+	
+	// Überprüfen, ob das Item existiert
+	isValidItem, itemFound := SearchItem(name)
+	if isValidItem {
+		// Auf die ID des Items zugreifen
+		id := itemFound["id"].(int)
 
-func DeleteItem(name string) bool  {
-    for i, item := range ShoppingList {
-        if item.Name == name {
-            ShoppingList = append(ShoppingList[:i], ShoppingList[i+1:]... )
-            return true
-        }
-    }
-    return false
-}
+		// SQL-Delete-Query, um das Item zu löschen
+		query := "DELETE FROM shopping_items WHERE id = $1"
+		_, err := dbContext.Exec(query, id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString("Fehler beim Löschen des Items")
+		}
 
+		// Erfolgreiche Löschbestätigung
+		return c.Status(fiber.StatusOK).SendString("Item erfolgreich gelöscht")
+	}
 
-func ItemCounter(item *ShoppingItem)  {
-	item.Amount++
-}
-
-func OutputShoppinglist(){
-	fmt.Println(ShoppingList)
+	return c.Status(fiber.StatusNotFound).Send([]byte("Item nicht gefunden"))
 }

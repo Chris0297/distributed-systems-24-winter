@@ -67,10 +67,10 @@ app.Use(cors.New(cors.Config{
     }))
 
 app.Get("/swagger/*", fiberSwagger.WrapHandler)
-app.Get(apiShoppingWithName, handler.GetShoppingItemByName)
+app.Get(apiShoppingWithName, handler.GetShoppingItemByName) //CHECK
 app.Get("/api/shopping", handler.GetAllItems)
 app.Post("/api/shopping", handler.AddNewShoppingItem)
-// app.Put(apiShoppingWithName, handler.UpdateItem)
+app.Put(apiShoppingWithName, handler.UpdateItem)
 app.Delete(apiShoppingWithName, handler.DeleteShoppingItem)
 if err := app.Listen(":"+port); err != nil {
 log.Fatalf("Failed to start server: %v", err)
