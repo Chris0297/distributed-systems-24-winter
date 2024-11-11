@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -21,14 +22,48 @@ func InitDbContext(db *sql.DB){
 	dbContext = db
 }
 
+// Suchfunktion, um ein Item mit dem angegebenen Namen zu finden
+func SearchItem(name string) (bool, map[string]interface{}) {
+	// SQL-Abfrage, um zu prüfen, ob das Item existiert
+	query := "SELECT shopping_item, shopping_amount FROM shopping_items WHERE shopping_item = $1"
+	
+	// Vorbereitung der Rückgabevariablen
+	var shoppingItem string
+	var shoppingAmount int
+	
+	// Abfrage ausführen
+	err := dbContext.QueryRow(query, name).Scan(&shoppingItem, &shoppingAmount)
+	
+	// Falls kein Eintrag gefunden wurde, wird `sql.ErrNoRows` zurückgegeben
+	if err == sql.ErrNoRows {
+		return false, nil
+	} else if err != nil {
+		log.Printf("Datenbankfehler: %v", err)
+		return false, nil
+	}
+	
+	// Wenn das Item gefunden wurde, die Details in einer Map speichern
+	foundItem := map[string]interface{}{
+		"shopping_item":  shoppingItem,
+		"shopping_amount": shoppingAmount,
+	}
+	return true, foundItem
+}
+
+// Handler-Funktion, um das Item nach Namen abzurufen
 func GetShoppingItemByName(c *fiber.Ctx) error {
 	name := c.Params("name")
-	IsValidItem, found_item := SearchItem(name)
+	IsValidItem, foundItem := SearchItem(name)
 	if IsValidItem {
-		return c.Status(fiber.StatusOK).JSON(found_item)
+		return c.Status(fiber.StatusOK).JSON(foundItem)
 	}
-	return c.Status(fiber.StatusNotFound).Send([]byte{})
+	return c.Status(fiber.StatusNotFound).Send([]byte("Item nicht gefunden"))
 }
+
+
+
+
+
 
 func GetAllItems(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(ShoppingList)
@@ -83,17 +118,17 @@ func AddNewShoppingItem(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Überprüfen des Artikels: %v", err))
 }
 
-func UpdateItem(c *fiber.Ctx) error {
-	name := c.Params("name")
-	is_valid_item, item_found := SearchItem(name)
-	if is_valid_item {
-		ItemCounter(item_found)
-		OutputShoppinglist()
-		return c.Status(fiber.StatusOK).JSON(item_found)
-	}
+// func UpdateItem(c *fiber.Ctx) error {
+// 	name := c.Params("name")
+// 	is_valid_item, item_found := SearchItem(name)
+// 	if is_valid_item {
+// 		ItemCounter(item_found)
+// 		OutputShoppinglist()
+// 		return c.Status(fiber.StatusOK).JSON(item_found)
+// 	}
 
-	return c.Status(fiber.StatusNotFound).Send([]byte{})
-}
+// 	return c.Status(fiber.StatusNotFound).Send([]byte{})
+// }
 
 
 // @Summary Get a shopping item by name
@@ -110,15 +145,6 @@ func DeleteShoppingItem(c *fiber.Ctx) error {
         return c.Status(fiber.StatusOK).Send([]byte{})
     }
         return c.Status(fiber.StatusNoContent).Send([]byte{})
-}
-
-func SearchItem(name string) (bool, *ShoppingItem) {
-	for i := range ShoppingList { 
-		if ShoppingList[i].Name == name {
-			return true, &ShoppingList[i] 
-		}
-	}
-	return false, nil
 }
 
 func DeleteItem(name string) bool  {
