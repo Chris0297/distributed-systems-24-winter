@@ -6,26 +6,33 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - PORT=8080
+      DB_HOST: db                  # Hostname des db-Service (PostgreSQL)
+      DB_PORT: 5432
+      DB_USER: myuser            # Benutzername für DB-Zugang
+      DB_PASSWORD: password    # Passwort für DB-Zugang
+      DB_NAME: appdb     # Name der DB
+      PORT: ${PORT:-8080}  # Standardport 8080, falls keine PORT-Variable gesetzt ist
     ports:
-      - "8080:8080"  # Exponiert den Container auf Port 8080 des Hosts
-    container_name: go_app
-    networks:
-      - app-network
-    depends_on:
-      - db  # Falls eine Datenbank benötigt wird, sonst entfernen
+      
+"8080:8080"  # Exponiert den Container auf Port 8080 des Hosts
+  container_name: go_app
+  networks:
+app-network
+depends_on:
+db  # Falls eine Datenbank benötigt wird, sonst entfernen
 
   db:
     image: postgres:13  # Beispiel-Image für PostgreSQL
     container_name: postgres_db
     environment:
-      POSTGRES_USER: user  # Benutzername für die Datenbank
+      POSTGRES_USER: myuser   # Benutzername für die Datenbank
       POSTGRES_PASSWORD: password  # Passwort für den Benutzer
       POSTGRES_DB: appdb  # Name der Datenbank
     ports:
-      - "5432:5432"  # Exponiert den Datenbank-Container auf Port 5432 des Hosts
-    networks:
-      - app-network
+      
+"5432:5432"  # Exponiert den Datenbank-Container auf Port 5432 des Hosts
+  networks:
+app-network
 
 networks:
   app-network:
