@@ -27,12 +27,13 @@ port := os.Getenv("PORT")
 Database_Username :=  os.Getenv("DB_USER")
 Database_Name := os.Getenv("DB_NAME")
 Database_Password :=  os.Getenv("DB_PASSWORD")
-Database_Port := "5432";
+Database_Port := 5432;
 
-Database_Host := "localhost";
+Database_Host := "db";
 
-connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable", Database_Username, Database_Name, Database_Password, Database_Host, Database_Port)
-    db, err := sql.Open("postgres", connStr)
+psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
+Database_Host, Database_Port, Database_Username, Database_Password, Database_Name)
+    db, err := sql.Open("postgres", psqlInfo)
     if err != nil {
         log.Fatal("Error opening database: ", err)
     }
