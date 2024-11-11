@@ -32,6 +32,8 @@ services:
       - "5432:5432"               # Exponiert den Datenbank-Container auf Port 5432 des Hosts
     networks:
       - app-network
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount das init.sql-Skript
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "myuser", "-d", "appdb"]
       interval: 10s               # Alle 10 Sekunden wird der Healthcheck durchgeführt

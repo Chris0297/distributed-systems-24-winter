@@ -1,18 +1,25 @@
 package handler
 
 import (
+	"database/sql"
 	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 )
 
+
+
 var ShoppingList []ShoppingItem
+var dbContext *sql.DB
 
 type ShoppingItem struct {
 	Name string `json:"name"`
 	Amount int  `json:"amount"`
 }
 
-
+func InitDbContext(db *sql.DB){
+	dbContext = db
+}
 
 func GetShoppingItemByName(c *fiber.Ctx) error {
 	name := c.Params("name")
@@ -28,11 +35,23 @@ func GetAllItems(c *fiber.Ctx) error {
 }
 
 func AddNewShoppingItem(c *fiber.Ctx) error {
-	name := c.Params("name")
-	neues_item := ShoppingItem{Name: name, Amount: 1}
-	ShoppingList = append(ShoppingList,neues_item)
-	OutputShoppinglist()
-	return c.Status(fiber.StatusCreated).JSON(neues_item)
+	var newItem ShoppingItem
+	if err := c.BodyParser(&newItem); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Ungültiger Request-Body")
+	}
+	
+	if newItem.Name == "" {
+		return c.Status(fiber.StatusBadRequest).SendString("Artikelname ist erforderlich")
+	}
+	query := `INSERT INTO shopping_items (shopping_item, shopping_amount) VALUES ($1, $2) RETURNING shopping_item, shopping_amount`
+	
+	err := dbContext.QueryRow(query, newItem.Name, newItem.Amount).Scan(&newItem.Name, &newItem.Amount)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Einfügen des Artikels: %v", err))
+	}
+
+	// Erfolgreiche Antwort mit dem eingefügten Artikel als JSON
+	return c.Status(fiber.StatusCreated).JSON(newItem)
 }
 
 func UpdateItem(c *fiber.Ctx) error {
