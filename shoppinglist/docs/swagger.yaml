@@ -7,15 +7,61 @@ definitions:
       name:
         type: string
     type: object
-host: localhost:8080
 info:
   contact: {}
   description: This is the API for managing a shopping list.
   title: Shopping List API
   version: "1.0"
 paths:
-  /item/{name}:
+  /api/shopping:
     get:
+      description: Get a list of all shopping items
+      operationId: get-all-items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "500":
+          description: Error fetching items
+          schema:
+            type: string
+      summary: Get all shopping items
+    post:
+      consumes:
+      - application/json
+      description: Add a new item to the shopping list
+      operationId: add-new-item
+      parameters:
+      - description: New Shopping Item
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ShoppingItem'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.ShoppingItem'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "500":
+          description: Error adding item
+          schema:
+            type: string
+      summary: Add a new shopping item
+  /api/shopping/{name}:
+    delete:
       description: Get details of a specific shopping item
       operationId: get-item-by-name
       parameters:
@@ -32,4 +78,74 @@ paths:
           schema:
             $ref: '#/definitions/handler.ShoppingItem'
       summary: Get a shopping item by name
+    get:
+      description: Get details of a specific shopping item
+      operationId: get-item-by-name
+      parameters:
+      - description: Name of the shopping item
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Item not found
+          schema:
+            type: string
+      summary: Get a shopping item by name
+    put:
+      consumes:
+      - application/json
+      description: Update the amount of an existing shopping item
+      operationId: update-item
+      parameters:
+      - description: Name of the shopping item
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Updated Shopping Item
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ShoppingItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "404":
+          description: Item not found
+          schema:
+            type: string
+        "500":
+          description: Error updating item
+          schema:
+            type: string
+      summary: Update a shopping item by name
+  /hello:
+    get:
+      description: Simple hello world endpoint
+      operationId: hello-world
+      responses:
+        "200":
+          description: Hello World
+          schema:
+            type: string
+      summary: Hello World
 swagger: "2.0"

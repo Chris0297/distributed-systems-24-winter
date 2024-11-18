@@ -7,7 +7,6 @@ import (
 "os"
 _ "shoppinglist/docs" // Hier sicherstellen, dass der Pfad korrekt ist
 "shoppinglist/handler"
-
 "github.com/gofiber/fiber/v2"
 "github.com/gofiber/fiber/v2/middleware/cors"
 "github.com/swaggo/fiber-swagger" // http://localhost:3000/swagger/index.html
@@ -17,14 +16,11 @@ var db *sql.DB
 // @title Shopping List API
 // @version 1.0
 // @description This is the API for managing a shopping list.
-// @host localhost:8080
 // @BasePath /
 func main() {
 var err error
 //Setting port via enviorment variable at the docker run command -e PORT=XXXX
 port := os.Getenv("PORT")
-
-
 Database_Username :=  os.Getenv("DB_USER")
 Database_Name := os.Getenv("DB_NAME")
 Database_Password :=  os.Getenv("DB_PASSWORD")
@@ -69,15 +65,13 @@ app.Use(cors.New(cors.Config{
 app.Get("/swagger/*", fiberSwagger.WrapHandler)
 app.Get(apiShoppingWithName, handler.GetShoppingItemByName) //CHECK
 app.Get("/api/shopping", handler.GetAllItems)
+app.Get("/hello", handler.SayHello)
 app.Post("/api/shopping", handler.AddNewShoppingItem)
 app.Put(apiShoppingWithName, handler.UpdateItem)
 app.Delete(apiShoppingWithName, handler.DeleteShoppingItem)
-if err := app.Listen(":"+port); err != nil {
-log.Fatalf("Failed to start server: %v", err)
-}
-// if err := app.Listen(":3000"); err != nil {
-// log.Fatalf("Failed to start server: %v", err)
-// }
 
+if err := app.Listen(":"+port); err != nil {
+    log.Fatalf("Failed to start server: %v", err)
+}
 
 }

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -52,8 +51,14 @@ func SearchItem(name string) (bool, map[string]interface{}) {
 	return true, foundItem
 }
 
-
-// Handler-Funktion, um das Item nach Namen abzurufen
+// @Summary Get a shopping item by name
+// @Description Get details of a specific shopping item
+// @ID get-item-by-name
+// @Produce json
+// @Param name path string true "Name of the shopping item"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {string} string "Item not found"
+// @Router /api/shopping/{name} [get]
 func GetShoppingItemByName(c *fiber.Ctx) error {
 	name := c.Params("name")
 	IsValidItem, foundItem := SearchItem(name)
@@ -62,7 +67,13 @@ func GetShoppingItemByName(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusNotFound).Send([]byte("Item nicht gefunden"))
 }
-
+// @Summary Get all shopping items
+// @Description Get a list of all shopping items
+// @ID get-all-items
+// @Produce json
+// @Success 200 {array} map[string]interface{}
+// @Failure 500 {string} string "Error fetching items"
+// @Router /api/shopping [get]]
 func GetAllItems(c *fiber.Ctx) error {
 	// SQL-Abfrage, um alle Items abzurufen
 	query := "SELECT id, shopping_item, shopping_amount FROM shopping_items"
@@ -99,12 +110,23 @@ func GetAllItems(c *fiber.Ctx) error {
 	if err = rows.Err(); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Fehler beim Verarbeiten der Daten")
 	}
-
+	if len(shoppingList) == 0 {
+		return c.Status(fiber.StatusOK).JSON([]string{})
+	} 
 	// Liste aller Items als JSON zurückgeben
 	return c.Status(fiber.StatusOK).JSON(shoppingList)
 }
 
-
+// @Summary Add a new shopping item
+// @Description Add a new item to the shopping list
+// @ID add-new-item
+// @Accept json
+// @Produce json
+// @Param body body ShoppingItem true "New Shopping Item"
+// @Success 201 {object} ShoppingItem
+// @Failure 400 {string} string "Invalid input"
+// @Failure 500 {string} string "Error adding item"
+// @Router /api/shopping [post]
 func AddNewShoppingItem(c *fiber.Ctx) error {
 	var newItem ShoppingItem
 
@@ -154,7 +176,18 @@ func AddNewShoppingItem(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Fehler beim Überprüfen des Artikels: %v", err))
 }
 
-// Handler-Funktion zur Aktualisierung eines Items nach Name
+// @Summary Update a shopping item by name
+// @Description Update the amount of an existing shopping item
+// @ID update-item
+// @Accept json
+// @Produce json
+// @Param name path string true "Name of the shopping item"
+// @Param body body ShoppingItem true "Updated Shopping Item"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {string} string "Invalid input"
+// @Failure 404 {string} string "Item not found"
+// @Failure 500 {string} string "Error updating item"
+// @Router /api/shopping/{name} [put]
 func UpdateItem(c *fiber.Ctx) error {
 	name := c.Params("name")
 	var newItem ShoppingItem
@@ -192,7 +225,7 @@ func UpdateItem(c *fiber.Ctx) error {
 // @Produce json
 // @Param name path string true "Name of the shopping item"
 // @Success 200 {object} ShoppingItem
-// @Router /item/{name} [get]
+// @Router /api/shopping/{name} [delete]
 func DeleteShoppingItem(c *fiber.Ctx) error {
 	name := c.Params("name")
 	
@@ -214,4 +247,12 @@ func DeleteShoppingItem(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusNotFound).Send([]byte("Item nicht gefunden"))
+}
+// @Summary Hello World
+// @Description Simple hello world endpoint
+// @ID hello-world
+// @Success 200 {string} string "Hello World"
+// @Router /hello [get]
+func SayHello(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).SendString("Hello World")
 }
