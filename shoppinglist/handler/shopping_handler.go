@@ -28,11 +28,11 @@ func SearchItem(name string) (bool, map[string]interface{}) {
 	
 	// Vorbereitung der Rückgabevariablen
 	var id int
-	var shoppingItem string
+	var shoppingName string
 	var shoppingAmount int
 	
 	// Abfrage ausführen
-	err := dbContext.QueryRow(query, name).Scan(&id, &shoppingItem, &shoppingAmount)
+	err := dbContext.QueryRow(query, name).Scan(&id, &shoppingName, &shoppingAmount)
 	
 	// Falls kein Eintrag gefunden wurde, wird `sql.ErrNoRows` zurückgegeben
 	if err == sql.ErrNoRows {
@@ -45,8 +45,8 @@ func SearchItem(name string) (bool, map[string]interface{}) {
 	// Wenn das Item gefunden wurde, die Details in einer Map speichern
 	foundItem := map[string]interface{}{
 		"id":              id,
-		"shopping_item":   shoppingItem,
-		"shopping_amount": shoppingAmount,
+		"name":   shoppingName,
+		"amount": shoppingAmount,
 	}
 	return true, foundItem
 }
