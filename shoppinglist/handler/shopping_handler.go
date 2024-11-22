@@ -100,8 +100,8 @@ func GetAllItems(c *fiber.Ctx) error {
 		// Item als Map speichern und zur Liste hinzufügen
 		item := map[string]interface{}{
 			"id":              id,
-			"shopping_item":   shoppingItem,
-			"shopping_amount": shoppingAmount,
+			"name":   shoppingItem,
+			"amount": shoppingAmount,
 		}
 		shoppingList = append(shoppingList, item)
 	}
