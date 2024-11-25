@@ -224,7 +224,7 @@ func UpdateItem(c *fiber.Ctx) error {
 // @ID get-item-by-name
 // @Produce json
 // @Param name path string true "Name of the shopping item"
-// @Success 200 {object} ShoppingItem
+// @Success 204 {object} ShoppingItem
 // @Router /api/shopping/{name} [delete]
 func DeleteShoppingItem(c *fiber.Ctx) error {
 	name := c.Params("name")
@@ -239,11 +239,12 @@ func DeleteShoppingItem(c *fiber.Ctx) error {
 		query := "DELETE FROM shopping_items WHERE id = $1"
 		_, err := dbContext.Exec(query, id)
 		if err != nil {
+			fmt.Printf("Error executing delete query: %v", err);
 			return c.Status(fiber.StatusInternalServerError).SendString("Fehler beim Löschen des Items")
 		}
 
 		// Erfolgreiche Löschbestätigung
-		return c.Status(fiber.StatusOK).SendString("Item erfolgreich gelöscht")
+		return c.Status(fiber.StatusNoContent).SendString("Item erfolgreich gelöscht")
 	}
 
 	return c.Status(fiber.StatusNotFound).Send([]byte("Item nicht gefunden"))

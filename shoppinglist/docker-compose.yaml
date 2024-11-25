@@ -43,11 +43,14 @@ services:
   frontend:
     image: maeddes/frontendflask:hse24
     environment:
-      API_URL: "https://supreme-robot-wwv9r69w59j2grwp-8080.app.github.dev/api/shopping"  # Use the API URL for communication between containers
+      API_URL: "http://app:8080/api/shopping"  # Use the API URL for communication between containers
     ports:
     - "5000:5000"
+    networks:
+      - app-network
     depends_on:
     - app
+
 
 
 networks:
