@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: michelep92/backendgo:hse24
     environment:
       DB_HOST: db                  # Hostname des db-Service (PostgreSQL)
       DB_PORT: 5432
