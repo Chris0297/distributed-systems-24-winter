@@ -24,11 +24,11 @@ port := os.Getenv("PORT")
 Database_Username :=  os.Getenv("DB_USER")
 Database_Name := os.Getenv("DB_NAME")
 Database_Password :=  os.Getenv("DB_PASSWORD")
-Database_Port := 5432;
+Database_Port := os.Getenv("DB_PORT");
+fmt.Println(Database_Port);
+Database_Host := os.Getenv("DB_HOST");
 
-Database_Host := "db";
-
-psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
+psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable",
 Database_Host, Database_Port, Database_Username, Database_Password, Database_Name)
     db, err = sql.Open("postgres", psqlInfo)
     if err != nil {

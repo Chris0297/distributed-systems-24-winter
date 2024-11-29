@@ -5,7 +5,7 @@ services:
     image: michelep92/backendgo:hse24
     environment:
       DB_HOST: db                  # Hostname des db-Service (PostgreSQL)
-      DB_PORT: 5432
+      DB_PORT: 7070
       DB_USER: myuser              # Benutzername für DB-Zugang
       DB_PASSWORD: password        # Passwort für DB-Zugang
       DB_NAME: appdb               # Name der DB
