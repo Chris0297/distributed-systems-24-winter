@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: backendogo
+  name: backendogo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backendogo
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: backendogo
+    spec:
+      containers:
+      - image: michelep92/backendgo:hse24
+        name: backendgo
+        resources: {}
+        env: # Umgebungsvariablen hinzugefügt
+        - name: DB_HOST
+          value: "db"
+        - name: DB_PORT
+          value: "7070"
+        - name: DB_USER
+          value: "myuser"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "appdb"
+        - name: PORT
+          value: "8080"
+status: {}

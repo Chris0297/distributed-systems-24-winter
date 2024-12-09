@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: postrgres
+  name: postrgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postrgres
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: postrgres
+    spec:
+      containers:
+      - image: postgres:13
+        name: postgres
+        resources: {}
+        env: # Umgebungsvariablen hinzugefügt
+        - name: POSTGRES_USER
+          value: "myuser"
+        - name: POSTGRES_PASSWORD
+          value: "password"
+        - name: POSTGRES_DB
+          value: "appdb"
+status: {}
