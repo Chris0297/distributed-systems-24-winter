@@ -22,9 +22,9 @@ spec:
         resources: {}
         env: # Umgebungsvariablen hinzugefügt
         - name: DB_HOST
-          value: "db"
+          value: "shoppingdb-service"
         - name: DB_PORT
-          value: "7070"
+          value: "5432"
         - name: DB_USER
           value: "myuser"
         - name: DB_PASSWORD

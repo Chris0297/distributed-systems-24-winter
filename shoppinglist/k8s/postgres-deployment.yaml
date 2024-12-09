@@ -28,4 +28,10 @@ spec:
           value: "password"
         - name: POSTGRES_DB
           value: "appdb"
-status: {}
+        volumeMounts:
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: init-sql
+        configMap:
+          name: init-sql-config
